@@ -1,4 +1,3 @@
-# HomeBody-BackEnd-Public-
 # HomeBody 프로젝트 소개_Back-End
   <div
     align="center">
