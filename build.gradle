@@ -1,0 +1,98 @@
+plugins {
+    id 'org.springframework.boot' version '2.5.4'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id "com.ewerk.gradle.plugins.querydsl" version '1.0.10'
+}
+
+group = 'tech.homebody'
+version = '0.0.1'
+sourceCompatibility = '11'
+
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+
+processResources {
+    duplicatesStrategy = "include"
+}
+
+bootJar{
+    archiveName("homebody-"+version + '-' + new Date().format('yyMMdd.HHmmss')+".jar")
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://plugins.gradle.org/m2/" }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.projectlombok:lombok:1.18.20'
+    implementation 'com.querydsl:querydsl-jpa'
+    implementation 'mysql:mysql-connector-java:8.0.25'
+    implementation 'io.sentry:sentry-spring-boot-starter:5.2.3' // SENTRY
+    implementation 'io.sentry:sentry-logback:5.2.3' // SENTRY LOGBACK
+
+    implementation group: 'org.javassist', name: 'javassist', version: '3.15.0-GA'
+    implementation 'com.google.firebase:firebase-admin:8.0.1' // FIREBASE ADMIN SDK FOR ID TOCKEN AUTHENTICATION
+    implementation 'org.springframework.boot:spring-boot-starter-security' // SECURITY
+    implementation 'org.springframework.boot:spring-boot-starter-batch' // SPRING BATCH
+    implementation 'org.springframework.boot:spring-boot-starter-quartz' // QUARTZ FOR SCHEDULER
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis' // REDIS
+
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.querydsl:querydsl-jpa'
+    testImplementation 'org.springframework.batch:spring-batch-test' // SPRING BATCH TEST
+
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    compile 'com.querydsl:querydsl-jpa'
+    compile 'com.querydsl:querydsl-apt'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+    testCompileOnly 'com.querydsl:querydsl-jpa'
+    testCompileOnly 'com.querydsl:querydsl-apt'
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.5.10'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-security', version: '1.5.10'
+}
+
+def querydslSrcDir = 'src/main/generated/querydsl'
+
+querydsl {
+    jpa = true
+    querydslSourcesDir = querydslSrcDir
+}
+
+sourceSets {
+    main.java.srcDir querydslSrcDir
+    main {
+        resources {
+            srcDirs "src/main/resources", "src/main/resources/${profile}"
+        }
+    }
+}
+
+compileQuerydsl{
+    options.annotationProcessorPath = configurations.querydsl
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+
+test {
+    useJUnitPlatform()
+
+}
